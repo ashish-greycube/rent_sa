@@ -1,5 +1,8 @@
 frappe.ui.form.on('Sales Invoice', {
-    validate(frm) {
+    validate: function (frm) {
+        frm.trigger('check_car_availability');
+    },
+    check_car_availability: function (frm) {
         frappe.call({
             method: 'rent_sa.rent_sa.api.check_car_availability',
             args: {
@@ -8,16 +11,26 @@ frappe.ui.form.on('Sales Invoice', {
                 'delivery_to_time_cf': frm.doc.delivery_to_time_cf,
                 'return_from_time_cf': frm.doc.return_from_time_cf,
                 'return_to_time_cf': frm.doc.return_to_time_cf
-            }
-        }).then(r => {
-            console.log(r)
-            if (r.message) {
-                if (r.message.length > 0) {
-                    validated = false;
-                    frappe.throw(__('Sales Invoice {0} has similar booking.', [r.message[0].name]))
-                    return false;
+            },
+            async: false,
+            // freeze the screen until the request is completed
+            freeze: true,
+            callback: (r) => {
+                // on success
+                if (r.message) {
+                    if (r.message.length > 0) {
+                        frappe.validated = false;
+                        frappe.throw(__('Sales Invoice {0} has similar booking.', [r.message[0].name]));
+                        return false
+                    } else {
+                        return true
+                    }
                 }
+            },
+            error: (r) => {
+                // on error
+                console.log('error', r)
             }
-        });
+        })
     }
 })
