@@ -20,7 +20,9 @@ frappe.ui.form.on('Sales Invoice', {
                 if (r.message) {
                     if (r.message.length > 0) {
                         frappe.validated = false;
-                        frappe.throw(__('Sales Invoice {0} has similar booking.', [r.message[0].name]));
+                        frappe.throw(__('Sales Invoice {0} has similar booking.', [
+                            '<a href="#Form/Sales Invoice/'+r.message[0].name+'">' + r.message[0].name+ '</a>'
+                            ]));
                         return false
                     } else {
                         return true
